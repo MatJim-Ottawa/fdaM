@@ -460,7 +460,7 @@ smooth.GLM <- function(argvals, y, fdParobj, weight=NULL, fdnames=list('argument
   
   if (q > 0)
   {
-    ind = (nbasis+1)(nbasis+q)
+    ind = (nbasis+1):(nbasis+q)
     if (ndim < 3)
     {        
       beta = coef[ind,]

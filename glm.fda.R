@@ -59,7 +59,7 @@ glm.fda <- function(Xmat, Ymat, distr, lamRmat, Wtvec=NULL, Bvec0=NULL, addterm=
   # end
   
   #  dimensions of Xmat
-  eps      = 0.1
+  eps      = .Machine$double.eps
   
   Size_Xmat = dim(Xmat)
   N = Size_Xmat[1]
