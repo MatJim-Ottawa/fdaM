@@ -140,34 +140,31 @@ glm.fda <- function(Xmat, Ymat, distr, lamRmat, Wtvec=NULL, Bvec0=NULL, addterm=
     }
     M = matrix(1,N,ncurve)
   }            
-  #             else if (iscell(Ymat) && length(Ymat) == 2)
-  #                 #  If YMAT is a cell array of length 2, then first cell
-  #                 #  contains a matrix containing the number of successes and
-  #                 #  the second cell either contains a matrix of the same
-  #                 #  size as the matrix in Ymat{1} or a single positive
-  #                 #  integer.
-  #                 #  These values or this value is the number of trials M
-  #                 #  for a binomial or bernoulli distribution.
-  #                 #  M must be a positive integer.
-  #                 Freq = Ymat{1}
-  #                 M    = Ymat{2}
-  #                 if length(M) == 1
-  #                     M = M*ones(N,ncurve)
-  #                 end
-  #                 if ~all(size(M) == size(Freq))
-  #                     error(['DISTR is binomial and matrix M is not the same ', ...
-  #                         'size as matrix FREQ'])
-  #                 end
-  #                 if any(any(M < 0))
-  #                     error(['DISTR is binomial and one or more values in M ', ...
-  #                         'have nonpositive values'])
-  #                 end
-  #                 if any(any(floor(M) ~= M))
-  #                     error(['DISTR is binomial and one or more values in M ', ...
-  #                         'have noninteger values.'])
-  #                 end
-  #                 #  Redefine YMAT is the proportion of sucesses
-  #                 Ymat = Freq./M
+              else if (is.list(Ymat) && length(Ymat) == 2)
+                  #  If YMAT is a cell array of length 2, then first cell
+                  #  contains a matrix containing the number of successes and
+                  #  the second cell either contains a matrix of the same
+                  #  size as the matrix in Ymat{1} or a single positive
+                  #  integer.
+                  #  These values or this value is the number of trials M
+                  #  for a binomial or bernoulli distribution.
+                  #  M must be a positive integer.
+                  Freq = Ymat[1]
+                  M    = Ymat[2]
+                  if length(M) == 1
+                      M = M*matrix(1,N,ncurve)
+                  end
+                  if ~all(dim(M) == dim(Freq))
+                      stop('DISTR is binomial and matrix M is not the same size as matrix FREQ')
+                  end
+                  if any(M < 0)
+                      stop('DISTR is binomial and one or more values in M have nonpositive values')
+                  end
+                  if any(floor(M) ~= M)
+                      stop('DISTR is binomial and one or more values in M have noninteger values.')
+                  end
+                  #  Redefine YMAT is the proportion of sucesses
+                  Ymat = Freq/M
   else
   {                
     stop('DISTR is binomial and YMAT has incorrect dimensions or is of wrong type.')
@@ -236,122 +233,151 @@ glm.fda <- function(Xmat, Ymat, distr, lamRmat, Wtvec=NULL, Bvec0=NULL, addterm=
 stop('Distribution name is invalid.')
     )
   }
-# else if iscell(distr) && length(distr) == N
-#     #  --------------------------------------------------------------------
-#     #    Observations can be in different families, distr is a cell array.
-#     #  --------------------------------------------------------------------
-#     mu      = zeros(N,1)
-#     loBnd   = zeros(N,1)
-#     upBnd   = zeros(N,1)
-#     devFn   = cell(N,1)
-#     stdFn   = cell(N,1)
-#     linkFn  = cell(N,1)
-#     DlinkFn = cell(N,1)
-#     IlinkFn = cell(N,1)
-#     #  Dealing with the presence of some binomial observations Ymat has
-#     #  to be a cell with N rows and 2 columns for all data.  Ugh!
-#     binomwrd = iscell(Ymat) && all(size(Ymat) == [N,2])
-#     for i=1N
-#         distri = distr{i}
-#         if ~ischar(distri)
-#             error('A distribution specification is not a string.')
-#         end
-#         switch distri
-#             case 'normal'
-#                 #  Note  Ymat can be any real number, no restrictions
-#                 devFn{i}   = @(mu,Ymat) (Ymat - mu).^2
-#                 stdFn{i}   = @(mu)  ones(size(mu))
-#                 linkFn{i}  = @(mu)  mu
-#                 DlinkFn{i} = @(mu)  ones(size(mu))
-#                 IlinkFn{i} = @(eta) eta
-#                 mu(i,) = Ymat(i,)
-#             case 'binomial'
-#                 if all(isnumeric(Ymat(i,)))
-#                     #  If YMAT a matrix, M is taken to be 1 (set below)
-#                     #  and it must be a binary matrix containing only
-#                     #0's and 1's
-#                     if any(Ymat(i,) < 0 | Ymat(i,) > 1)
-#                         error(['For binomial case, YMAT a single column but ', ...
-#                             ' contains values other than 0 or 1.'])
-#                     end
-#                 elseif binomwrd
-#                     Freqi = Ymat{i,1}
-#                     Mi    = Ymat{i,2}
-#                     if length(Mi) == 1
-#                         Mi = Mi*ones(1,ncurve)
-#                     end
-#                     if ~all(size(Mi) == size(Freqi))
-#                         error(['DISTR is binomial and matrix M is not the same ', ...
-#                             'size as matrix FREQ'])
-#                     end
-#                     if any(any(Mi < 0))
-#                         error(['DISTR is binomial and one or more values in M ', ...
-#                             'have nonpositive values'])
-#                     end
-#                     if any(any(floor(Mi) ~= Mi))
-#                         error(['DISTR is binomial and one or more values in M ', ...
-#                             'have noninteger values.'])
-#                     end
-#                     #  Redefine YMAT is the proportion of sucesses
-#                     Ymat(i,) = (Freqi./Mi)
-#                 else
-#                     error(['DISTR is binomial and YMAT has incorrect dimensions ', ...
-#                         ' or is of wrong type.'])
-#                 end
-#                 devFn{i}   = @(mu,Ymat) 2*M.*(Ymat.*log((Ymat+(Ymat==0))./mu) + ...
-#                     (1-Ymat).*log((1-Ymat+(Ymat==1))./(1-mu)))
-#                 stdFn{i}   = @(mu)  sqrt(mu.*(1-mu)./M)
-#                 linkFn{i}  = @(mu)  log(mu./(1-mu))
-#                 DlinkFn{i} = @(mu)  1./(mu.*(1-mu))
-#                 loBnd(i)   = log(eps)
-#                 upBnd(i)   = -loBnd(i)
-#                 IlinkFn{i} = @(eta) 1./(1 + exp(-constrain(eta,loBnd,upBnd)))
-#                 mu(i)      = (M(i).*Ymat(i) + 0.5)./(M(i) + 1)
-#             case 'poisson'
-#                 #  Note Ymat must not contain negative numbers
-#                 if any(Ymat(i,) < 0)
-#                     error('DISTR is poisson and YMAT contains negative values')
-#                 end
-#                 devFn{i}   = @(mu,Ymat) 2*(Ymat.*(log((Ymat+(Ymat==0))./mu)) - ...
-#                     (Ymat - mu))
-#                 stdFn{i}   = @(mu)  sqrt(mu)
-#                 linkFn{i}  = @(mu)  log(mu)
-#                 DlinkFn{i} = @(mu)  1./mu
-#                 loBnd(i)   = log(eps)
-#                 upBnd(i)   = -loBnd(i)
-#                 IlinkFn{i} = @(eta) exp(constrain(eta,loBnd,upBnd))
-#                 mu(i,)    = Ymat(i,) + 0.25
-#             case 'gamma'
-#                 #  Note  Ymat must contain only positive numbers
-#                 if any(Ymat(i) <= 0)
-#                     error('DISTR is gamma and Y contains nonpositive values')
-#                 end
-#                 devFn{i}   = @(mu,Ymat) 2*(-log(Ymat./mu) + (Ymat - mu)./mu)
-#                 stdFn{i}   = @(mu) mu
-#                 linkFn{i}  = @(mu)  1./mu
-#                 DlinkFn{i} = @(mu) -1./mu.^2
-#                 loBnd(i)   = eps
-#                 upBnd(i)   = 1/loBnd(i)
-#                 IlinkFn{i} = @(eta) 1./constrain(eta,loBnd,upBnd)
-#                 mu(i,)    = max(Ymat(i,), eps)
-#             case 'inverse gaussian'
-#                 #  Note  Ymat must contain only positive numbers
-#                 if any(Ymat(i,) <= 0)
-#                     error(['DISTR is inverse gaussian and Y contains ', ...
-#                         'nonpositive values'])
-#                 end
-#                 devFn{i}   = @(mu,Ymat) ((Ymat - mu)./mu).^2./ Ymat
-#                 stdFn{i}   = @(mu)  mu.^(3/2)
-#                 loBnd(i)   = eps.^(1/2)
-#                 upBnd(i)   = 1/loBnd(i)
-#                 linkFn{i}  = @(mu)  constrain(mu,loBnd,upBnd).^(-2)
-#                 DlinkFn{i} = @(mu)  -2*mu.^(-3)
-#                 IlinkFn{i} = @(eta) constrain(eta,loBnd,upBnd).^(-1/2)
-#                 mu(i,)    = Ymat(i,)
-#             otherwise
-#                 error('Distribution name is invalid.')
-#         end
-#     end
+else if (is.list(distr) && length(distr) == N)
+{
+    #  --------------------------------------------------------------------
+    #    Observations can be in different families, distr is a cell array.
+    #  --------------------------------------------------------------------
+    mu      = matrix(0,N,1)
+    loBnd   = matrix(0,N,1)
+    upBnd   = matrix(0,N,1)
+    devFn   = list()
+    stdFn   = list()
+    linkFn  = list()
+    DlinkFn = list()
+    IlinkFn = list()
+    #  Dealing with the presence of some binomial observations Ymat has
+    #  to be a cell with N rows and 2 columns for all data.  Ugh!
+    # Going to implement this as a list with two objects, N x 1 matrix
+    binomwrd = is.list(Ymat) && all(dim(Ymat[[1]]) == [N,1]) && all(dim(Ymat[[2]]) == [N,1])
+    for (i in 1:N)
+      {
+        distri = distr[[i]]
+        if (~is.character(distri))
+            {error('A distribution specification is not a string.')}
+        
+        switch(distri,
+            'normal' = 
+                {
+                #  Note  Ymat can be any real number, no restrictions
+                devFn[[i]]   = function(mu,Ymat) (Ymat - mu)^2
+                stdFn[[i]]   = function(mu)  matrix(1,size(mu),size(mu))
+                linkFn[[i]]  = function(mu)  mu
+                DlinkFn[[i]] = function(mu)  matrix(1,size(mu),size(mu))
+                IlinkFn[[i]] = function(eta) eta
+                mu[i,] = Ymat[i,] 
+                },
+            'binomial' = 
+              {
+                if (all(is.numeric(Ymat[i,])))
+                    {
+                    #  If YMAT a matrix, M is taken to be 1 (set below)
+                    #  and it must be a binary matrix containing only
+                    #0's and 1's
+                    if any(Ymat[i,] < 0 | Ymat[i,] > 1)
+                        {
+                        stop('For binomial case, YMAT a single column but contains values other than 0 or 1.')
+                        }
+                    }
+                
+                else if (binomwrd)
+                   { 
+                      Freqi = Ymat[[1]][i]
+                      Mi    = Ymat[[2]][i]
+                      if (length(Mi) == 1)
+                          {
+                            Mi = Mi*matrix(1,1,ncurve)
+                          }
+                      
+                      if (~all(dim(Mi) == dim(Freqi)))
+                          {
+                            stop('DISTR is binomial and matrix M is not the same size as matrix FREQ')
+                          }
+  
+                      if (any(any(Mi < 0)))
+                          {
+                            stop('DISTR is binomial and one or more values in M have nonpositive values')
+                          }
+  
+                      if (any(any(floor(Mi) ~= Mi)))
+                          {
+                            stop('DISTR is binomial and one or more values in M have noninteger values.')
+                          }
+          
+                      #  Redefine YMAT is the proportion of sucesses
+                      Ymat[[1]] = Freqi/Mi
+                  }
+                else
+                    {
+                      stop('DISTR is binomial and YMAT has incorrect dimensions or is of wrong type.')
+                    }
+    
+                devFn[[i]]   = function(mu,Ymat) 2*M*(Ymat*log((Ymat+(Ymat==0))/mu) + (1-Ymat)*log((1-Ymat+(Ymat==1))/(1-mu)))
+                stdFn[[i]] = function(mu)  sqrt(mu*(1-mu)/M)
+                linkFn[[i]]  = function(mu)  log(mu/(1-mu))
+                DlinkFn[[i]] = function(mu)  1/(mu*(1-mu))
+                loBnd[i]   = log(eps)
+                upBnd[i]   = -loBnd(i)
+                IlinkFn[[i]] = function(eta) 1/(1 + exp(-constrain(eta,loBnd,upBnd)))
+                mu[i]      = (M[i]*Ymat(i) + 0.5)/(M[i] + 1)
+              },
+
+            'poisson' = 
+              {  
+                #  Note Ymat must not contain negative numbers
+                if (any(Ymat[i,] < 0))
+                    {
+                      stop('DISTR is poisson and YMAT contains negative values')
+                    }
+                
+                devFn[[i]]   = function(mu,Ymat) 2*(Ymat*(log((Ymat+(Ymat==0))/mu)) - (Ymat - mu))
+                stdFn[[i]]   = function(mu)  sqrt(mu)
+                linkFn[[i]]  = function(mu)  log(mu)
+                DlinkFn[[i]] = function(mu)  1/mu
+                loBnd[i]   = log(eps)
+                upBnd[i]   = -loBnd[i]
+                IlinkFn[[i]] = function(eta) exp(constrain(eta,loBnd,upBnd))
+                mu[i,]    = Ymat[i,] + 0.25
+              },
+            'gamma' = 
+              {                
+                #  Note  Ymat must contain only positive numbers
+                if (any(Ymat[i] <= 0))
+                    {
+                      stop('DISTR is gamma and Y contains nonpositive values')
+                    }
+                
+                devFn[[i]]   = function(mu,Ymat) 2*(-log(Ymat/mu) + (Ymat - mu)/mu)
+                stdFn[[i]]   = function(mu) mu
+                linkFn[[i]]  = function(mu)  1/mu
+                DlinkFn[[i]] = function(mu) -1/mu^2
+                loBnd[i]   = eps
+                upBnd[i]   = 1/loBnd(i)
+                IlinkFn[[i]] = function(eta) 1/constrain(eta,loBnd,upBnd)
+                mu[i,]    = max(Ymat[i,], eps)
+              },
+            'inverse gaussian' = 
+  
+              {     #  Note  Ymat must contain only positive numbers
+                if (any(Ymat[i,] <= 0))
+                    {
+                  stop('DISTR is inverse gaussian and Y contains nonpositive values')
+                    }
+                
+                devFn[[i]] = function(mu,Ymat) ((Ymat - mu)/mu)^2/ Ymat
+                stdFn[[i]] = function(mu)  mu^(3/2)
+                loBnd[i]   = eps^(1/2)
+                upBnd[i]   = 1/loBnd(i)
+                linkFn[[i]]  = function(mu)  constrain(mu,loBnd,upBnd)^(-2)
+                DlinkFn[[i]] = function(mu)  -2*mu^(-3)
+                IlinkFn[[i]] = function(eta) constrain(eta,loBnd,upBnd)^(-1/2)
+                mu[i,]    = Ymat[i,]
+              },
+            
+              stop('Distribution name is invalid.')
+            )
+      }
+}
 else
 {
   stop('DISTR is neither a string or a cell array of length N.')
@@ -368,18 +394,18 @@ if (is.character(distr))
 {
   eta = linkFn(mu)
 }
-# else
-#     {    
-#       eta  = matrix(0,N,nurve)
-#       Deta = matrix(0,N,nurve)
-#       stdm = matrix(0,N,nurve)
-#       for (i in 1:N)
-#           {
-#             linkFni  = linkFn{i}
-#             eta(i,) = linkFni(mu(i,))
-#           }
-#       
-#     }
+else
+    {    
+      eta  = matrix(0,N,nurve)
+      Deta = matrix(0,N,nurve)
+      stdm = matrix(0,N,nurve)
+      for (i in 1:N)
+          {
+            linkFni  = linkFn[[i]
+            eta[i,] = linkFni(mu[i,])
+          }
+      
+    }
 
 #--------------------------------------------------------------------------
 #                        Set up for iterations
@@ -430,21 +456,21 @@ while (iter <= iterLim)
   # Compute adjusted dependent variable for least squares fit
   
   if (is.character(distr))
-  {
-    Deta = DlinkFn(mu)
-    stdm = stdFn(mu)
-  }
-  #     else
-  #         {
-  #           for (i in 1:N)
-  #             {
-  #               DlinkFni  = DlinkFn{i}
-  #               stdFni    = stdFn{i}
-  #               mui       = mu(i,)
-  #               Deta(i,) = DlinkFni(mui)
-  #               stdm(i,) = stdFni(mui)
-  #             }
-  #         }
+    {
+      Deta = DlinkFn(mu)
+      stdm = stdFn(mu)
+    }
+  else
+      {
+        for (i in 1:N)
+          {
+            DlinkFni  = DlinkFn[[i]]
+            stdFni    = stdFn[[i]]
+            mui       = mu[i,]
+            Deta[i,] = DlinkFni(mui)
+            stdm[i,] = stdFni(mui)
+          }
+      }
   
   Zvec = eta + (Ymat - mu) * Deta
   
@@ -506,7 +532,7 @@ while (iter <= iterLim)
     # Hidden function for reusing code
     f_ = function() 
     {
-      if (any(any(mu < muLims(1))))
+      if (any(any(mu < muLims[1])))
       {
         for (j in 1:m)
         {
@@ -517,50 +543,63 @@ while (iter <= iterLim)
     
     switch(distr,
            'binomial'=
-{ 
-  if (any(any(mu < muLims[1] | muLims[2] < mu)))
-  {
-    for (j in 1:m)
-    {
-      mu[,j] = max(min(mu[,j],muLims[2]),muLims[1])
-    }
-  }
-},
-'poisson' =
-{
-  f_()
-},
-'gamma' = 
-{
-  f_()
-},
-'inverse gaussian' = 
-{
-  f_()
-}
-    )
-  }
-#     else
-#       {
-#         for (i in 1:N)
-#             distri = distr{i}
-#             switch distri
-#                 case 'binomial'
-#                     if any(any(mu(i,) < muLims(1) | muLims(2) < mu(i,)))
-#                         for j=1m
-#                             mu(i,j) = max(min(mu(i,j),muLims(2)),muLims(1))
-#                         end
-#                     end
-#                 case {'poisson' 'gamma' 'inverse gaussian'}
-#                     if any(any(mu(i,) < muLims(1)))
-#                         for j=1m
-#                             mu(i,j) = max(mu(i,j),muLims(1))
-#                         end
-#                     end
-#             end
-#         end
-#       }
-
+                  { 
+                    if (any(any(mu < muLims[1] | muLims[2] < mu)))
+                    {
+                      for (j in 1:m)
+                      {
+                        mu[,j] = max(min(mu[,j],muLims[2]),muLims[1])
+                      }
+                    }
+                  },
+          'poisson' =
+          {
+            f_()
+          },
+          'gamma' = 
+          {
+            f_()
+          },
+          'inverse gaussian' = 
+          {
+            f_()
+          }
+         )
+        }
+    else
+      {
+        # Hidden function for reusing code
+        f_ = function() 
+        {
+          if (any(any(mu < muLims[1])))
+          {
+            for (j in 1:m)
+            {
+              mu[,j] = max(mu[,j],muLims[1])
+            }
+          }             
+        }
+        
+        for (i in 1:N)
+            {
+            distri = distr[[i]]
+            switch(distri,                   
+                'binomial' =
+                    {
+                      if (any(any(mu[i,] < muLims[1] | muLims[2] < mu[i,])))
+                        {
+                          for (j in 1:m)
+                            {
+                              mu[i,j] = max(min(mu[i,j],muLims[2]),muLims[1])
+                            }
+                        }
+                   },                
+                'poisson' = { f_() },
+                'gamma' = { f_() },
+                'inverse gaussian' = { f_() }
+                )
+        }
+      }
 
 # Check stopping conditions
 
