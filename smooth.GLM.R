@@ -1,5 +1,5 @@
-smooth.GLM <- function(argvals, y, fdParobj, weight=NULL, fdnames=list('arguments','replications','variables'), covariates=NULL, 
-                       dfscale=1, family='binomial', control=NULL, start=NULL) {
+smooth.GLM <- function(argvals, y, fdParobj, weight=NULL, fdnames=list('arguments','replications','variables'), covariates=NULL,dfscale=1, family='binomial', control=NULL, start=NULL) 
+  {
   
   #SMOOTH.GLM  Smooths discrete curve represented by basis function
   #  expansions fit by penalized least squares.
@@ -335,32 +335,36 @@ smooth.GLM <- function(argvals, y, fdParobj, weight=NULL, fdnames=list('argument
     #  augment BASISMAT0 and BASISMAT by the covariate matrix
     #  if it is supplied
     
-    #     if (!is.null(covariates))
-    #       {
-    #       
-    #         sparsewrd = issparse(basismat0)
-    #         basismat0 = full([basismat0, covariates])
-    #         basismat  = full([basismat,  covariates])
-    #         
-    #         if (sparsewrd)
-    #         {
-    #           basismat0 = sparse(basismat0)
-    #           basismat  = sparse(basismat)
-    #           
-    #         }
-    #         
-    #         if (!is.null(lamRmat))
-    #           {        
-    # #           lamRmat = [[lamRmat,         zeros(nbasis,q)]
-    # #                      [zeros(q,nbasis), zeros(q)       ]]
-    #             lamRmat = cbind(lamRmat,matrix(0,nbasis,q),matrix(0,q,nbasis),matrix(0,q,q))
-    #           }
-    #       }
+        if (!is.null(covariates))
+          {
+          
+#             sparsewrd = issparse(basismat0)
+#             basismat0 = full([basismat0, covariates])
+#             basismat  = full([basismat,  covariates])
+#             
+              sparsewrd = 0
+              basismat0 = cbind(basismat0, covariates)
+              basismat = cbind(basismat, covariates)
+              
+            if (sparsewrd)
+            {
+              basismat0 = sparse(basismat0)
+              basismat  = sparse(basismat)
+              
+            }
+            
+            if (!is.null(lamRmat))
+              {        
+    #           lamRmat = [[lamRmat,         zeros(nbasis,q)]
+    #                      [zeros(q,nbasis), zeros(q)       ]]
+                lamRmat = rbind(cbind(lamRmat,matrix(0,nbasis,q)),cbind(matrix(0,q,nbasis),matrix(0,q,q)))
+              }
+          }
     
     #  ------------------------------------------------------------------
     #               compute solution using Matlab function glmfit
     #  ------------------------------------------------------------------
-    
+
     if (ndim < 3)
     {
       coef  = matrix(0,nbasis,ncurve)

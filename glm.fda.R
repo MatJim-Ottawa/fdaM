@@ -141,7 +141,7 @@ glm.fda <- function(Xmat, Ymat, distr, lamRmat, Wtvec=NULL, Bvec0=NULL, addterm=
     M = matrix(1,N,ncurve)
   }            
               else if (is.list(Ymat) && length(Ymat) == 2)
-                  #  If YMAT is a cell array of length 2, then first cell
+                  {#  If YMAT is a cell array of length 2, then first cell
                   #  contains a matrix containing the number of successes and
                   #  the second cell either contains a matrix of the same
                   #  size as the matrix in Ymat{1} or a single positive
@@ -151,20 +151,20 @@ glm.fda <- function(Xmat, Ymat, distr, lamRmat, Wtvec=NULL, Bvec0=NULL, addterm=
                   #  M must be a positive integer.
                   Freq = Ymat[1]
                   M    = Ymat[2]
-                  if length(M) == 1
-                      M = M*matrix(1,N,ncurve)
-                  end
-                  if ~all(dim(M) == dim(Freq))
-                      stop('DISTR is binomial and matrix M is not the same size as matrix FREQ')
-                  end
-                  if any(M < 0)
-                      stop('DISTR is binomial and one or more values in M have nonpositive values')
-                  end
-                  if any(floor(M) ~= M)
-                      stop('DISTR is binomial and one or more values in M have noninteger values.')
-                  end
+                  if (length(M) == 1)
+                      {M = M*matrix(1,N,ncurve)}
+                  
+                  if (~all(dim(M) == dim(Freq)))
+                      {stop('DISTR is binomial and matrix M is not the same size as matrix FREQ')}
+                  
+                  if (any(M < 0))
+                      {stop('DISTR is binomial and one or more values in M have nonpositive values')}
+                  
+                  if (any(floor(M) != M))
+                      {stop('DISTR is binomial and one or more values in M have noninteger values.')}
+                  
                   #  Redefine YMAT is the proportion of sucesses
-                  Ymat = Freq/M
+                  Ymat = Freq/M}
   else
   {                
     stop('DISTR is binomial and YMAT has incorrect dimensions or is of wrong type.')
@@ -249,7 +249,7 @@ else if (is.list(distr) && length(distr) == N)
     #  Dealing with the presence of some binomial observations Ymat has
     #  to be a cell with N rows and 2 columns for all data.  Ugh!
     # Going to implement this as a list with two objects, N x 1 matrix
-    binomwrd = is.list(Ymat) && all(dim(Ymat[[1]]) == [N,1]) && all(dim(Ymat[[2]]) == [N,1])
+    binomwrd = is.list(Ymat) && all(dim(Ymat[[1]]) == c(N,1)) && all(dim(Ymat[[2]]) == c(N,1))
     for (i in 1:N)
       {
         distri = distr[[i]]
@@ -274,7 +274,7 @@ else if (is.list(distr) && length(distr) == N)
                     #  If YMAT a matrix, M is taken to be 1 (set below)
                     #  and it must be a binary matrix containing only
                     #0's and 1's
-                    if any(Ymat[i,] < 0 | Ymat[i,] > 1)
+                    if (any(Ymat[i,] < 0 | Ymat[i,] > 1))
                         {
                         stop('For binomial case, YMAT a single column but contains values other than 0 or 1.')
                         }
@@ -299,7 +299,7 @@ else if (is.list(distr) && length(distr) == N)
                             stop('DISTR is binomial and one or more values in M have nonpositive values')
                           }
   
-                      if (any(any(floor(Mi) ~= Mi)))
+                      if (any(any(floor(Mi) != Mi)))
                           {
                             stop('DISTR is binomial and one or more values in M have noninteger values.')
                           }
@@ -401,7 +401,7 @@ else
       stdm = matrix(0,N,nurve)
       for (i in 1:N)
           {
-            linkFni  = linkFn[[i]
+            linkFni  = linkFn[[i]]
             eta[i,] = linkFni(mu[i,])
           }
       
