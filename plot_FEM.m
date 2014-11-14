@@ -1,73 +1,42 @@
-function plot_FEM(fdobj, X, Y, nderivs, nfine)
-% PLOT  Plots a FEM object FDOBJ over a rectangular grid defined by 
-% vectors X and Y;
+function plot_FEM(FEMfd, AZ, EL, clims, label)
+% PLOT  Plots a FEM object FEMFD over its triangular mesh.
+% The coefficient vector for FEMfd object defines the heights of the 
+% surface at the vertices.  The vertices are in
+% NBASIS by 2 matrix P extracted from the FEM basis object.
 %
-% Last modified on 15 May 2011
+% Plotting is done using Matlab function trisurf.
+%
+% Last modified on 2 November 2014
 
-if nargin < 5,                      nfine = 101;      end
-if nargin < 4 || isempty(nderivs),  nderivs = [0,0];  end
-if nargin < 3,                      Y = [];           end
-if nargin < 2,                      X = [];           end
+if nargin < 3, EL =  30.0;  end
+if nargin < 2, AZ = -37.5;  end
 
-if ~isa_fd(fdobj)
-   error('FDOBJ is not an FD object')
-end
+coefmat = full(getcoef(FEMfd));
+nsurf   = size(coefmat,2);
 
-%  check derivatives
-
-if length(nderivs) ~= 2
-    error('NDERIVS not of length 2.');
-end
-if sum(nderivs) > 2
-    error('Maximum derivative order is greater than two.');
-end
-
-coefmat = full(getcoef(fdobj));
-nsurf = size(coefmat,2);
-
-basisobj = getbasis(fdobj);
+basisobj = getbasis(FEMfd);
 
 params = getbasispar(basisobj);
 
 p         = params.p;
-t         = params.t;
-t         = t(:,1:3);
-
-if isempty(X)
-    xmin = min(p(:,1));
-    xmax = max(p(:,1));
-    nx   = nfine;
-    X    = linspace(xmin, xmax, nx)';
-else
-    nx   = length(X);
-end
-
-if isempty(Y)
-    ymin = min(p(:,2));
-    ymax = max(p(:,2));
-    ny   = nfine;
-    Y    = linspace(ymin, ymax, ny)';    
-else
-    ny   = length(Y);
-end
-
-Xmat = X*ones(1,ny);
-Ymat = ones(nx,1)*Y';
-Xvec = Xmat(:);
-Yvec = Ymat(:);
-
-
-evalmat = zeros(nx*ny,nsurf);
-for iopr = 1:size(nderivs,1)
-    evalmat = evalmat + eval_FEM_fd(Xvec, Yvec, fdobj, nderivs(iopr,:));
-end
+t         = params.t(:,1:3);
 
 for isurf=1:nsurf
-    evalmati = reshape(evalmat(:,isurf),nx,ny)';
-    surf(X,Y,evalmati);
+    trisurf(t, p(:,1), p(:,2), coefmat(:,isurf))
+    view(AZ,EL)
+    colorbar
+    if nargin >=4
+        caxis(clims)
+    end
+    shading interp
     xlabel('\fontsize{13} X')
     ylabel('\fontsize{13} Y');
     if nsurf > 1
+        if nargin < 5
+            title(['\fontsize{16} Sample ',num2str(isurf)]);
+        else
+            title(['\fontsize{16} ',label(isurf,:)]);
+        end
         pause
     end
 end
