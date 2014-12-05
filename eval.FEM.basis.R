@@ -214,4 +214,5 @@ eval.FEM.basis <- function(Xvec, Yvec, basisobj, nderivs = matrix(0,1,2))
       }
     }
   }
+  return(evalmat)
 }
