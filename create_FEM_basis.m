@@ -96,7 +96,7 @@ if isempty(e)
     end    
 else
     if size(p,1) ~= 2 && size(p,2) ~= 2 || ...
-       size(e,1) ~= 7 && size(e,2) ~= 7 || ...
+       size(e,1) ~= 7 && size(e,2) ~= 2 || ...
        size(t,1) ~= 4 && size(t,2) ~= 4
         error('Dimensions of at least one of P, E and T are not correct.');
     end
@@ -105,7 +105,7 @@ end
 if size(p,2) ~= 2 && size(p,1) == 2
     p = p';
 end
-if size(e,2) ~= 7 && size(e,1) == 7
+if size(e,2) ~= 2 && size(e,1) == 2
     e = e';
 end
 if size(t,2) ~= 4 && size(t,1) == 4

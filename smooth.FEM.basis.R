@@ -7,12 +7,12 @@ smooth.FEM.basis <- function(Xvec, Yvec, data, basisobj, lambda = 1e-12, wtvec =
   
   N = dim(data);
   
-  if( length(Xvec) != N[1] || dim(Xvec)[2] != 1 )
+  if( dim(Xvec)[1] != N[1] || dim(Xvec)[2] != 1 )
   {
     stop('XVEC is not a column vector of n X-coordinate values.')
   }
   
-  if( length(Yvec) != N[1] || dim(Yvec)[2] != 1 )
+  if( dim(Yvec)[1] != N[1] || dim(Yvec)[2] != 1 )
   {
     stop('YVEC is not a column vector of n X-coordinate values.')
   }
@@ -68,14 +68,14 @@ smooth.FEM.basis <- function(Xvec, Yvec, data, basisobj, lambda = 1e-12, wtvec =
   # Contruct projection matrix on the space spanned by the columns of the design matrix
   # DESMAT and remove projection of data on DESMAT from DATA
   
-  if( matwt )
+  if( wtvec$matwt )
   {
-    wtmat = vtvec
+    wtmat = wtvec$vtvec
     wtfac = chol(wtmat)
   }
   else
   {
-    wtmat = diag(wtvec)
+    wtmat = diag(as.vector(wtvec$wtvec))
     wtfac = sqrt(wtmat)
   }
   
@@ -95,14 +95,14 @@ smooth.FEM.basis <- function(Xvec, Yvec, data, basisobj, lambda = 1e-12, wtvec =
   basismat = eval.FEM.basis(Xvec, Yvec, basisobj)
   
   # Set up the linear equations for smoothing
-  params = basismat$params
+  params = basisobj$params
   
   numnodes = dim(params$nodes)[1]
   
   indnodes = 1:numnodes
   
   # Extract quantities required for setting up mass and stiffness matrices
-  
+  nodeStruct = list()
   nodeStruct$order      = params$order
   nodeStruct$nodes      = params$nodes
   nodeStruct$nodeindex  = params$nodeindex
@@ -155,26 +155,26 @@ smooth.FEM.basis <- function(Xvec, Yvec, data, basisobj, lambda = 1e-12, wtvec =
   
   # compute degrees of freedom of smooth
   
-  df = trace(y2cmat %*% basismat)
+  df = sum(diag(y2cMap %*% basismat))
   
   # compute error sum of squares
   
   datahat = basismat %*% coef1
   
-  SSE = sum(wtfac %*% (data - datahat) ^ 2)
+  SSE = colSums(wtfac %*% (data - datahat) ^ 2)
   
   # compute GCV index
   
   if (df < N[1])
   {
-    gcv = (SSE/N[1])/( (n - df)/n)^2
+    gcv = (SSE/N[1])/( (N[1] - df)/N[1])^2
   }
   else
   {
     gcv = NaN
   }
 
-  return(list(smoothFd = smooth_fd, laplaceFd = laplace_fd))
+  return(list(smoothFd = smooth_fd, laplaceFd = laplace_fd, df = df, gcv = gcv, beta = beta, SSE = SSE, y2cMap = y2cMap, K0mat = K0mat, K1mat = K1mat))
   
   
 }

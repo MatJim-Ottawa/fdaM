@@ -187,6 +187,9 @@ else if(type == "pow"    ||
           type == "power") {
                 type = "power"
         }
+else if (type == "FEM") {
+            type = "FEM"
+        }
 else {
                 type = "unknown"
         }
@@ -297,7 +300,10 @@ if (type=="fourier"){
 } else if(type=="monom") {
     if (length(params) != nbasis)
         stop("No. of parameters not equal to no. of basis fns for (monomial basisobj$")
-} else stop("Unrecognizable basis")
+}else if(type=="FEM"){
+        print("basisfd.R line 304 needs work")
+        }
+else stop("Unrecognizable basis")
 
 #  Save call
 

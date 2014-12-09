@@ -40,9 +40,9 @@ stiff1 <- function(nodeStruct)
     for (el in 1:nele)
     {
       ind = nodeindex[el,]
-      K1M = ( metric(el,1,1) * KXX + metric(el,1,2) * KXY + metric(el,2,1) * t(KXY) +  metric(el,2,2) * KYY )
+      K1M = ( metric[el,1,1] * KXX + metric[el,1,2] * KXY + metric[el,2,1] * t(KXY) +  metric[el,2,2] * KYY )
       
-      K1[ind,ind] = K1[ind,ind] + K1M * Jvec(el)
+      K1[ind,ind] = K1[ind,ind] + K1M * Jvec[el]
     }
 
   }
@@ -63,8 +63,8 @@ stiff1 <- function(nodeStruct)
     for (el in 1: nele)
     {
       ind = nodeindex[el,]
-      K1M = (metric(el,1,1)*KXX + metric(el,1,2)*KXY + metric(el,2,1)*t(KXY) + metric(el,2,2)*KYY)
-      K1[ind,ind] = K[ind,ind] + K1M*Jvec(el)
+      K1M = (metric[el,1,1]*KXX + metric[el,1,2]*KXY + metric[el,2,1]*t(KXY) + metric[el,2,2]*KYY)
+      K1[ind,ind] = K1[ind,ind] + K1M*Jvec[el]
     }
     
   }
@@ -72,4 +72,6 @@ stiff1 <- function(nodeStruct)
   {
     stop('ORDER not 1 or 2.')
   }
+  
+  return(K1)
 }

@@ -1,6 +1,6 @@
 eval.FEM.basis <- function(Xvec, Yvec, basisobj, nderivs = matrix(0,1,2))
 {
-  if(dims(Xvec)[2] == 2)
+  if(dim(Xvec)[2] == 2)
   {
     if(is.null(Yvec))
     {
@@ -97,7 +97,7 @@ eval.FEM.basis <- function(Xvec, Yvec, basisobj, nderivs = matrix(0,1,2))
   
   # Denominator of change of coordinates change matrix
   
-  modJax = Jvec
+  modJac = Jvec
   ones3 = matrix(1,3,1)
   modJacMat = modJac %*% t(ones3)
   

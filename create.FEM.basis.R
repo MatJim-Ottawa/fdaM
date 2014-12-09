@@ -24,7 +24,7 @@ create.FEM.basis <- function(p, e, t, order = 2, dl = NULL)
   }
   else
   {
-    if(dim(p)[1] != 2 & dim(p)[2] != 2 | dim(e)[1] != 7 & dim(e)[2] != 7 | dim(t)[1] != 4 & dim(t)[2] != 4)
+    if(dim(p)[1] != 2 & dim(p)[2] != 2 | dim(e)[1] != 2 & dim(e)[2] != 2 | dim(t)[1] != 4 & dim(t)[2] != 4)
     {
       stop('Dimensions of at least one of P,E and T are not correct')
     }
@@ -35,12 +35,12 @@ create.FEM.basis <- function(p, e, t, order = 2, dl = NULL)
     p = t(p)
   }
   
-  if(dim(e)[2] != 7 & dim(e)[1] == 7)
+  if(dim(e)[2] != 2 & dim(e)[1] == 2)
   {
     e = t(e)
   }
   
-  if(dim(t) != 4 & dim(t)[1] == 4)
+  if(dim(t)[2] != 4 & dim(t)[1] == 4)
   {
     t = t(t)
   }
@@ -50,6 +50,8 @@ create.FEM.basis <- function(p, e, t, order = 2, dl = NULL)
   rangeval = NULL
   
   nodeStruct = makenodes(p, t[,1:3], order)
+  
+  petstr = list()
   
   petstr$p = p
   petstr$e = e
@@ -65,6 +67,8 @@ create.FEM.basis <- function(p, e, t, order = 2, dl = NULL)
   
   nbasis = dim(nodeStruct$nodes)[1]
   
-  return(basisfd(type = type, rangeval = rangeval, nbasis = nbasis, params = params))
+  basisobj = basisfd(type, rangeval, nbasis, params)
+  
+  return(basisobj)
   
 }

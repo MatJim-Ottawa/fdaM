@@ -65,8 +65,8 @@ makenodes <- function(p, t, order = 2)
     {
       diff1x = nodes[nodeindex[i,2],1] - nodes[nodeindex[i,1],1]
       diff1y = nodes[nodeindex[i,2],2] - nodes[nodeindex[i,1],2]
-      diff2x = nodes[nodeindex[i,3],2] - nodes[nodeindex[i,1],2]
-      diff2y = nodes[nodeindex[i,3],1] - nodes[nodeindex[i,1],1]
+      diff2y = nodes[nodeindex[i,3],2] - nodes[nodeindex[i,1],2]
+      diff2x = nodes[nodeindex[i,3],1] - nodes[nodeindex[i,1],1]
       
       Jvec[i] = (diff1x * diff2y - diff2x * diff1y) / 2
       
@@ -80,6 +80,7 @@ makenodes <- function(p, t, order = 2)
     stop('ORDER not 1 or 2.')
   }
   
+  nodeStruct = list()
   nodeStruct$order = order
   nodeStruct$nodes = nodes
   nodeStruct$nodeindex = nodeindex

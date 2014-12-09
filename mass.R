@@ -35,10 +35,14 @@ mass <- function(nodeStruct)
     for(el in 1:nele)
     {
       ind = nodeindex[el,]
-      K0[ind,ind] = K0[ind,ind] + K0M*Jvec[el]    }
+      
+      K0[ind,ind] = K0[ind,ind] + K0M*Jvec[el]   
+    }
   }
   else
   {
     stop('ORDER not 1 or 2.')
   }
+  
+  return(K0)
 }
